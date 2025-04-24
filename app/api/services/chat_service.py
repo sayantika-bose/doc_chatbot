@@ -63,6 +63,13 @@ class ChatService:
             raise
 
     async def _get_prompt(self, template_name: str, **kwargs):
+        """
+        This method has been updated to bypass ChatPromptTemplate since we're 
+        now using a more direct approach with HumanMessage.
+        
+        It still renders the Jinja2 template but returns the raw text
+        instead of creating a ChatPromptTemplate.
+        """
         try:
             logger.info(f"Loading prompt template: {template_name}")
             template = self.jinja_env.get_template(template_name)
@@ -72,9 +79,8 @@ class ChatService:
             truncated_prompt = prompt_text[:500] + "..." if len(prompt_text) > 500 else prompt_text
             logger.info(f"Rendered prompt template: {truncated_prompt}")
             
-            return ChatPromptTemplate.from_messages([
-                ("system", prompt_text)
-            ])
+            # Return the raw prompt text instead of creating a ChatPromptTemplate
+            return prompt_text
         except Exception as e:
             logger.error(f"Error getting prompt template {template_name}: {str(e)}")
             logger.error(traceback.format_exc())
@@ -95,22 +101,39 @@ class ChatService:
 
             logger.info(f"Found {len(contexts)} relevant chunks")
             
-            # Create prompt
-            logger.info("Creating prompt with context and question...")
-            prompt = await self._get_prompt(
-                "system_prompt.j2",
-                contexts=contexts,
-                question=question
-            )
-
-            # Use a simple direct approach with the LLM
-            logger.info("Using simplified approach with direct HumanMessage...")
+            # Use both approaches (render template and direct string) for robustness
+            logger.info("Trying to use template with context preprocessing...")
             
-            # Join contexts with separator
-            context_text = "\n---\n".join(contexts)
+            # Escape any content that might contain template syntax characters
+            # This helps prevent the ValueError: Single '}' encountered in format string
+            # caused by user documents with special characters
+            safe_contexts = []
+            for ctx in contexts:
+                # Replace any potentially problematic characters in the context
+                # This is a robust approach to handle any special syntax
+                safe_ctx = ctx.replace('{', '{{').replace('}', '}}')
+                safe_contexts.append(safe_ctx)
             
-            # Create a simple prompt format that works reliably with Gemini
-            simplified_prompt = f"""Please answer the question based on this context:
+            try:
+                # Use template (now safely rendered)
+                template_prompt = await self._get_prompt(
+                    "system_prompt.j2",
+                    contexts=safe_contexts,
+                    question=question.replace('{', '{{').replace('}', '}}')
+                )
+                
+                # If template rendering succeeds, use it as our prompt
+                prompt = template_prompt
+                logger.info("Successfully used template prompt")
+            except Exception as template_error:
+                # Fallback to direct string format if template fails
+                logger.warning(f"Template approach failed: {str(template_error)}, using fallback direct format")
+                
+                # Join contexts with separator for the fallback approach
+                context_text = "\n---\n".join(contexts)
+                
+                # Create a simple prompt format that works reliably with Gemini
+                prompt = f"""Please answer the question based on this context:
 
 Context:
 {context_text}
@@ -118,11 +141,12 @@ Context:
 Question: {question}
 
 Answer:"""
-            
-            logger.info(f"Simplified prompt preview: {simplified_prompt[:100]}...")
+                
+            # Log preview of the final prompt used
+            logger.info(f"Final prompt preview: {prompt[:100]}...")
             
             # Create a human message with the prompt
-            message = HumanMessage(content=simplified_prompt)
+            message = HumanMessage(content=prompt)
             
             # Call the LLM directly with the human message
             logger.info("Invoking LLM for response generation...")
