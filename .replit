@@ -1,0 +1,13 @@
+modules = ["nodejs-20", "python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["bash", "libxcrypt"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000

@@ -1,7 +1,7 @@
 import { UploadResponse } from "@/types";
 
 class DocumentService {
-  private apiUrl = "/api/v1";
+  private apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
   async uploadDocument(file: File): Promise<UploadResponse> {
     try {

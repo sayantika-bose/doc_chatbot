@@ -6,7 +6,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from fastapi import FastAPI
-from routers import chat_router
+from fastapi.middleware.cors import CORSMiddleware
+from api.routers import chat_router
 import uvicorn
 from dotenv import load_dotenv
 
@@ -14,6 +15,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(title="RAG Chatbot API")
+
+# Configure CORS
+origins = [
+    "http://localhost:5000",  # Frontend server
+    "http://localhost:3000",
+    "*"  # Allow all origins for development
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers
 app.include_router(chat_router.router, prefix="/api/v1", tags=["chat"])

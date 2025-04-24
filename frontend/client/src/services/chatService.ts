@@ -1,7 +1,7 @@
 import { ChatResponse } from "@/types";
 
 class ChatService {
-  private apiUrl = "/api/v1";
+  private apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
   async sendMessage(documentId: string, question: string): Promise<ChatResponse> {
     try {

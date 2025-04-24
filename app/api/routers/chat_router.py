@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from models.schemas import DocumentUploadResponse, ChatRequest, ChatResponse
+from api.models.schemas import DocumentUploadResponse, ChatRequest, ChatResponse
 from api.services.chat_service import ChatService
 from api.services.indexer_service import IndexerService
+from typing import Dict
 
 router = APIRouter()
 
@@ -41,3 +42,7 @@ async def chat(request: ChatRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/health", response_model=Dict[str, str])
+async def health_check():
+    return {"status": "healthy", "message": "API is up and running"}

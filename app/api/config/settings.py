@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     MONGODB_CLUSTER: str = os.getenv('MONGODB_CLUSTER', '')
     MONGODB_DB_NAME: str = os.getenv('MONGODB_DB_NAME', '')
     MONGODB_COLLECTION_NAME: str = os.getenv('MONGODB_COLLECTION_NAME', '')
+    DEBUG: bool = os.getenv('DEBUG', 'False').lower() == 'true'
 
     @property
     def MONGODB_URI(self) -> str:
