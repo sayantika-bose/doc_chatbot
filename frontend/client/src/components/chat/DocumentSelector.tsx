@@ -50,7 +50,7 @@ const DocumentSelector = ({ documents, currentDocumentId }: DocumentSelectorProp
                   }`}>
                     {doc.fileName}
                   </p>
-                  <p className="text-neutral-500 text-xs truncate">ID: {doc.id.substring(0, 10)}...</p>
+                  <p className="text-neutral-500 text-xs truncate">ID: {doc.id ? doc.id.substring(0, 10) + '...' : 'N/A'}</p>
                 </div>
               </div>
             ))}
