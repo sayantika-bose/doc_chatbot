@@ -46,10 +46,10 @@ class IndexerService:
             logger.info(f"Collection 'documents' created or accessed successfully")
             
             self.text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1000,
-                chunk_overlap=200,
+                chunk_size=1500,  # Increased from 1000 to 1500
+                chunk_overlap=300,  # Increased from 200 to 300
             )
-            logger.info("Text splitter initialized with chunk_size=1000, chunk_overlap=200")
+            logger.info("Text splitter initialized with chunk_size=1500, chunk_overlap=300")
             
             # Check existing collection stats
             self._log_collection_stats()
@@ -139,7 +139,18 @@ class IndexerService:
             logger.error(traceback.format_exc())
             raise
 
-    async def get_relevant_chunks(self, query: str, document_id: str, k: int = 110):
+    async def get_relevant_chunks(self, query: str, document_id: str, k: int = 150):
+        """
+        Retrieve relevant chunks from a document for a given query.
+        
+        Args:
+            query: The user's question
+            document_id: The ID of the document to search within
+            k: The number of chunks to retrieve (increased to 150 by default)
+            
+        Returns:
+            A list of text chunks related to the query
+        """
         logger.info(f"Searching for relevant chunks for query: '{query}'")
         logger.info(f"Document ID filter: {document_id}, k={k}")
         
