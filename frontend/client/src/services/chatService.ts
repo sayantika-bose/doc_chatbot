@@ -5,13 +5,15 @@ class ChatService {
 
   async sendMessage(documentId: string, question: string): Promise<ChatResponse> {
     try {
+      console.log(`Sending message to ${this.apiUrl}/chat with document_id: ${documentId}`);
+      
       const response = await fetch(`${this.apiUrl}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          documentId,
+          document_id: documentId, // Changed from camelCase to snake_case to match backend
           question,
         }),
       });
