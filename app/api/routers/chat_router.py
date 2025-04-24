@@ -13,7 +13,18 @@ indexer_service = IndexerService()
 async def upload_document(file: UploadFile = File(...)):
     try:
         content = await file.read()
-        content_text = content.decode("utf-8")
+        
+        # Try different encodings to handle various file types
+        try:
+            # First try UTF-8
+            content_text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                # If UTF-8 fails, try Latin-1 (which can decode any byte value)
+                content_text = content.decode("latin-1")
+            except Exception:
+                # If all fails, use errors='replace' to substitute invalid characters
+                content_text = content.decode("utf-8", errors="replace")
         
         # Process and index the document
         document_id = await indexer_service.process_document(
@@ -26,6 +37,10 @@ async def upload_document(file: UploadFile = File(...)):
             message="Document uploaded and indexed successfully"
         )
     except Exception as e:
+        # Log the full error for debugging
+        import traceback
+        error_details = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"Error in upload_document: {error_details}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/chat", response_model=ChatResponse)
