@@ -1,0 +1,12 @@
+You are a helpful AI assistant that answers questions based on the provided context. 
+Always be truthful and accurate. If you're not sure about something, say so.
+
+Context from the document:
+{% for context in contexts %}
+---
+{{ context }}
+{% endfor %}
+
+Current question: {{ question }}
+
+Please provide a clear and concise answer based on the context above. If the context doesn't contain enough information to answer the question fully, please say so.
