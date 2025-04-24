@@ -38,11 +38,10 @@ export const fetchDocuments = createAsyncThunk(
   "documents/fetchDocuments",
   async (_, { rejectWithValue }) => {
     try {
-      // This would normally fetch documents from the API
-      // but we'll just return what's in local storage for this example
-      const storedDocuments = localStorage.getItem("documents");
-      return storedDocuments ? JSON.parse(storedDocuments) : [];
+      // Use the document service to fetch documents
+      return await documentService.getDocuments();
     } catch (error) {
+      console.error("Error in fetchDocuments thunk:", error);
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       }

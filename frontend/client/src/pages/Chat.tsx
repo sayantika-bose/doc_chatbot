@@ -16,7 +16,21 @@ const Chat = () => {
 
   useEffect(() => {
     // Fetch documents on component mount
-    dispatch(fetchDocuments() as any);
+    const fetchDocs = async () => {
+      console.log("Fetching documents on Chat component mount");
+      await dispatch(fetchDocuments() as any);
+    };
+    
+    fetchDocs();
+    
+    // Set up interval to refresh documents list every 30 seconds
+    const intervalId = setInterval(() => {
+      console.log("Refreshing documents list");
+      dispatch(fetchDocuments() as any);
+    }, 30000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   useEffect(() => {

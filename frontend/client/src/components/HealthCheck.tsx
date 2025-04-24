@@ -31,12 +31,12 @@ const HealthCheck = () => {
 
   return (
     <div className="my-2">
-      <p className="text-sm flex items-center space-x-2">
+      <div className="text-sm flex items-center space-x-2">
         API Status: 
         <Badge variant={status === "healthy" ? "default" : "destructive"} className="ml-2">
           {status}
         </Badge>
-      </p>
+      </div>
       {error && (
         <Alert variant="destructive" className="mt-2">
           <AlertDescription>{error}</AlertDescription>
