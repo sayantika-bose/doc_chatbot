@@ -4,9 +4,9 @@ Always be truthful and accurate. If you're not sure about something, say so.
 Context from the document:
 {% for context in contexts %}
 ---
-{{ context }}
+{{ context | safe }}
 {% endfor %}
 
-Current question: {{ question }}
+Current question: {{ question | safe }}
 
 Please provide a clear and concise answer based on the context above. If the context doesn't contain enough information to answer the question fully, please say so.

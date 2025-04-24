@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { RootState } from "@/types";
-import { sendMessage } from "@/store/chatSlice";
+import { sendMessage, addUserMessage } from "@/store/chatSlice";
 
 const formSchema = z.object({
   message: z.string().min(1, "Please enter a question"),
@@ -34,13 +34,24 @@ const ChatInput = () => {
   const onSubmit = async (data: FormData) => {
     if (!currentDocumentId) return;
     
-    await dispatch(sendMessage({
-      documentId: currentDocumentId,
-      question: data.message,
-    }) as any);
+    // Store the message content
+    const messageContent = data.message;
     
+    // Reset the form immediately so the input clears right away
     form.reset();
     setTextareaHeight("auto");
+    
+    // Add user message to chat history immediately
+    dispatch(addUserMessage({
+      documentId: currentDocumentId,
+      content: messageContent,
+    }));
+    
+    // Then dispatch the action to send the message and get AI response
+    await dispatch(sendMessage({
+      documentId: currentDocumentId,
+      question: messageContent,
+    }) as any);
   };
 
   // Auto-resize textarea based on content
@@ -59,11 +70,11 @@ const ChatInput = () => {
   // If no document is selected, show a message
   if (!currentDocumentId) {
     return (
-      <div className="pt-4 border-t border-neutral-200 mt-auto">
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
-          <FileQuestionIcon className="h-8 w-8 mx-auto mb-2 text-blue-400" />
-          <h3 className="text-blue-700 font-medium mb-1">Select a document first</h3>
-          <p className="text-sm text-blue-600">
+      <div className="pt-4 border-t border-border mt-auto">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
+          <FileQuestionIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
+          <h3 className="text-foreground font-medium mb-1">Select a document first</h3>
+          <p className="text-sm text-muted-foreground">
             Please select a document from the sidebar to start chatting
           </p>
         </div>
@@ -72,7 +83,7 @@ const ChatInput = () => {
   }
 
   return (
-    <div className="pt-4 border-t border-neutral-200 mt-auto">
+    <div className="pt-4 border-t border-border mt-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-end gap-2">
           <FormField
@@ -85,12 +96,21 @@ const ChatInput = () => {
                     {...field}
                     ref={textareaRef}
                     placeholder={`Ask about ${currentDocument?.fileName || 'your document'}...`}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg resize-none"
+                    className="w-full px-4 py-3 border border-input rounded-lg resize-none"
                     style={{ height: textareaHeight }}
                     rows={2}
                     onChange={(e) => {
                       field.onChange(e);
                       handleTextareaChange();
+                    }}
+                    onKeyDown={(e) => {
+                      // Submit form when user presses Enter without shift key
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (field.value.trim() && !isLoading) {
+                          form.handleSubmit(onSubmit)();
+                        }
+                      }
                     }}
                   />
                 </FormControl>
@@ -99,14 +119,14 @@ const ChatInput = () => {
           />
           <Button
             type="submit"
-            className="rounded-full p-3 h-auto w-auto bg-blue-600 hover:bg-blue-700"
+            className="rounded-full p-3 h-auto w-auto bg-primary hover:bg-primary/90"
             disabled={isLoading || !form.watch("message")}
           >
             <SendIcon className="h-5 w-5" />
           </Button>
         </form>
       </Form>
-      <p className="mt-2 text-xs text-neutral-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         Responses are generated based on the content of your document.
       </p>
     </div>
