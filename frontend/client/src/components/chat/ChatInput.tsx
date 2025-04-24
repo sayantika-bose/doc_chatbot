@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { SendIcon } from "lucide-react";
+import { SendIcon, FileQuestionIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -22,6 +22,7 @@ const ChatInput = () => {
   const [textareaHeight, setTextareaHeight] = useState("auto");
   
   const { currentDocumentId, isLoading } = useSelector((state: RootState) => state.chat);
+  const { currentDocument } = useSelector((state: RootState) => state.documents);
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -55,6 +56,21 @@ const ChatInput = () => {
     handleTextareaChange();
   }, [form.watch("message")]);
 
+  // If no document is selected, show a message
+  if (!currentDocumentId) {
+    return (
+      <div className="pt-4 border-t border-neutral-200 mt-auto">
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
+          <FileQuestionIcon className="h-8 w-8 mx-auto mb-2 text-blue-400" />
+          <h3 className="text-blue-700 font-medium mb-1">Select a document first</h3>
+          <p className="text-sm text-blue-600">
+            Please select a document from the sidebar to start chatting
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-4 border-t border-neutral-200 mt-auto">
       <Form {...form}>
@@ -68,7 +84,7 @@ const ChatInput = () => {
                   <Textarea
                     {...field}
                     ref={textareaRef}
-                    placeholder="Ask a question about your document..."
+                    placeholder={`Ask about ${currentDocument?.fileName || 'your document'}...`}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg resize-none"
                     style={{ height: textareaHeight }}
                     rows={2}
@@ -83,8 +99,8 @@ const ChatInput = () => {
           />
           <Button
             type="submit"
-            className="rounded-full p-3 h-auto w-auto"
-            disabled={!currentDocumentId || isLoading || !form.watch("message")}
+            className="rounded-full p-3 h-auto w-auto bg-blue-600 hover:bg-blue-700"
+            disabled={isLoading || !form.watch("message")}
           >
             <SendIcon className="h-5 w-5" />
           </Button>

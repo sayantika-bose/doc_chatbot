@@ -35,9 +35,8 @@ const UploadStatus = ({
             <div>
               <p className="text-green-700 font-medium">Upload successful!</p>
               <p className="text-neutral-600 mt-1">
-                Your document ID is: <span className={cn("font-mono bg-neutral-100 px-2 py-1 rounded")}>{documentId}</span>
+                Your document has been uploaded and is ready for chat.
               </p>
-              <p className="text-sm text-neutral-500 mt-1">Use this ID when chatting with the document.</p>
               <Button 
                 onClick={onGoToChat} 
                 className="mt-3"

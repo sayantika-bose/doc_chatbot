@@ -6,6 +6,7 @@ import DropZone from "@/components/upload/DropZone";
 import UploadStatus from "@/components/upload/UploadStatus";
 import { RootState } from "@/types";
 import { resetUploadState } from "@/store/documentsSlice";
+import { setCurrentDocumentId } from "@/store/chatSlice";
 
 const DocumentUpload = () => {
   const navigate = useNavigate();
@@ -20,6 +21,13 @@ const DocumentUpload = () => {
       dispatch(resetUploadState());
     };
   }, [dispatch]);
+
+  // When a document is successfully uploaded, set it as the current document in chat
+  useEffect(() => {
+    if (uploadSuccess && currentDocument?.id) {
+      dispatch(setCurrentDocumentId(currentDocument.id));
+    }
+  }, [uploadSuccess, currentDocument, dispatch]);
 
   const handleGoToChat = () => {
     navigate('/chat');
