@@ -1,0 +1,190 @@
+2025-04-24 22:00:01,403 - ChatService - INFO - Question: What this document is about?
+
+2025-04-24 22:00:01,404 - ChatService - INFO - Retrieving relevant chunks from document...
+2025-04-24 22:00:01,407 - IndexerService - INFO - Searching for relevant chunks for query: 'What this document is about?
+'
+2025-04-24 22:00:01,408 - IndexerService - INFO - Document ID filter: 9af020e6-0bba-4864-aed8-368060d097fc, k=3
+2025-04-24 22:00:01,408 - IndexerService - INFO - Generating embedding for query...
+2025-04-24 22:00:03,576 - IndexerService - INFO - Executing similarity search with document_id filter...
+2025-04-24 22:00:04,124 - IndexerService - INFO - Search returned 3 results
+2025-04-24 22:00:04,124 - ChatService - INFO - Found 3 relevant chunks
+2025-04-24 22:00:04,124 - ChatService - INFO - Creating prompt with context and question...
+2025-04-24 22:00:04,124 - ChatService - INFO - Loading prompt template: system_prompt.j2
+2025-04-24 22:00:04,276 - ChatService - INFO - Rendered prompt template: You are a helpful AI assistant that answers questions based on the provided context. 
+Always be truthful and accurate. If you're not sure about something, say so.
+
+Context from the document:
+
+---
+...
+2025-04-24 22:00:04,307 - ChatService - INFO - Executing RAG chain with LLM...
+2025-04-24 22:00:04,325 - ChatService - INFO - Invoking LLM for response generation...
+2025-04-24 22:00:06,651 - ChatService - ERROR - Error getting chat response: Invalid argument provided to Gemini: 400 * GenerateContentRequest.contents: contents is not specified
+
+2025-04-24 22:00:07,253 - ChatService - ERROR - Traceback (most recent call last):
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 220, in _achat_with_retry
+    return await generation_method(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\ai\generativelanguage_v1beta\services\generative_service\async_client.py", line 440, in generate_content
+    response = await rpc(
+               ^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 230, in retry_wrapped_func
+    return await retry_target(
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 160, in retry_target
+    _retry_error_helper(
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_base.py", line 212, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 155, in retry_target
+    return await target()
+           ^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 88, in __await__
+    raise exceptions.from_grpc_error(rpc_error) from rpc_error
+google.api_core.exceptions.InvalidArgument: 400 * GenerateContentRequest.contents: contents is not specified
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\FIBR_AI_PROJECT\app\api\services\chat_service.py", line 115, in get_response
+    response = await rag_chain.ainvoke({
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\runnables\base.py", line 3075, in ainvoke
+    input = await coro_with_context(part(), context, create_task=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 390, in ainvoke
+    llm_result = await self.agenerate_prompt(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 948, in agenerate_prompt
+    return await self.agenerate(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 906, in agenerate
+    raise exceptions[0]
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 1074, in _agenerate_with_cache
+    result = await self._agenerate(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 1010, in _agenerate
+    response: GenerateContentResponse = await _achat_with_retry(
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 229, in _achat_with_retry
+    return await _achat_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 189, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\__init__.py", line 400, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 223, in _achat_with_retry
+    raise ChatGoogleGenerativeAIError(
+langchain_google_genai.chat_models.ChatGoogleGenerativeAIError: Invalid argument provided to Gemini: 400 * GenerateContentRequest.contents: contents is not specified
+
+
+2025-04-24 22:00:07,264 - router - ERROR - Error in chat endpoint: Invalid argument provided to Gemini: 400 * GenerateContentRequest.contents: contents is not specified
+
+Traceback (most recent call last):
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 220, in _achat_with_retry
+    return await generation_method(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\ai\generativelanguage_v1beta\services\generative_service\async_client.py", line 440, in generate_content
+    response = await rpc(
+               ^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 230, in retry_wrapped_func
+    return await retry_target(
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 160, in retry_target
+    _retry_error_helper(
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_base.py", line 212, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\retry\retry_unary_async.py", line 155, in retry_target
+    return await target()
+           ^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 88, in __await__
+    raise exceptions.from_grpc_error(rpc_error) from rpc_error
+google.api_core.exceptions.InvalidArgument: 400 * GenerateContentRequest.contents: contents is not specified
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\FIBR_AI_PROJECT\app\api\routers\chat_router.py", line 79, in chat
+    response = await chat_service.get_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\api\services\chat_service.py", line 115, in get_response
+    response = await rag_chain.ainvoke({
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\runnables\base.py", line 3075, in ainvoke
+    input = await coro_with_context(part(), context, create_task=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 390, in ainvoke
+    llm_result = await self.agenerate_prompt(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 948, in agenerate_prompt
+    return await self.agenerate(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 906, in agenerate
+    raise exceptions[0]
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 1074, in _agenerate_with_cache
+    result = await self._agenerate(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 1010, in _agenerate
+    response: GenerateContentResponse = await _achat_with_retry(
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 229, in _achat_with_retry
+    return await _achat_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 189, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\__init__.py", line 400, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\FIBR_AI_PROJECT\app\venv\Lib\site-packages\langchain_google_genai\chat_models.py", line 223, in _achat_with_retry
+    raise ChatGoogleGenerativeAIError(
+langchain_google_genai.chat_models.ChatGoogleGenerativeAIError: Invalid argument provided to Gemini: 400 * GenerateContentRequest.contents: contents is not specified
+
+
+INFO:     127.0.0.1:64625 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-04-24 22:00:10,118 - router - INFO - List documents endpoint called
+2025-04-24 22:00:10,791 - router - INFO - Found 5 documents
+INFO:     127.0.0.1:64625 - "GET /api/v1/documents HTTP/1.1" 200 OK
+2025-04-24 22:00:41,335 - router - INFO - List documents endpoint called
+2025-04-24 22:00:41,393 - router - INFO - Found 5 documents
+INFO:     127.0.0.1:64656 - "GET /api/v1/documents HTTP/1.1" 200 OK
+2025-04-24 22:01:11,277 - router - INFO - List documents endpoint called
+2025-04-24 22:01:11,296 - router - INFO - Found 5 documents
+INFO:     127.0.0.1:64676 - "GET /api/v1/documents HTTP/1.1" 200 OK

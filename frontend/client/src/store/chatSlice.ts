@@ -19,6 +19,12 @@ export const sendMessage = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      if (!documentId) {
+        return rejectWithValue("No document selected. Please select a document first.");
+      }
+
+      console.log(`Sending message to chat service with document_id: ${documentId}`);
+
       // Create user message
       const userMessage: Message = {
         id: nanoid(),
@@ -28,24 +34,57 @@ export const sendMessage = createAsyncThunk(
         timestamp: Date.now(),
       };
 
-      // Send message to API
-      const response = await chatService.sendMessage(documentId, question);
+      try {
+        // Send message to API
+        const response = await chatService.sendMessage(documentId, question);
+        
+        // Log successful response
+        console.log("Chat response received:", response);
 
-      // Create AI message
-      const aiMessage: Message = {
-        id: nanoid(),
-        content: response.answer,
-        isUserMessage: false,
-        documentId,
-        timestamp: Date.now(),
-      };
+        // Create AI message
+        const aiMessage: Message = {
+          id: nanoid(),
+          content: response.answer || "Sorry, I couldn't generate a response.",
+          isUserMessage: false,
+          documentId,
+          timestamp: Date.now(),
+        };
 
-      return { userMessage, aiMessage, documentId };
+        return { userMessage, aiMessage, documentId };
+      } catch (apiError: any) {
+        console.error("API error in sendMessage:", apiError);
+        
+        // If we want to show the error in the chat instead of a toast notification
+        // Could uncomment this and modify the .rejected case in the reducer
+        /*
+        const errorMessage: Message = {
+          id: nanoid(),
+          content: `Error: ${apiError.message || "Unknown error"}. Please try again.`,
+          isUserMessage: false,
+          documentId,
+          timestamp: Date.now(),
+        };
+        
+        return { userMessage, aiMessage: errorMessage, documentId };
+        */
+        
+        // For now, we'll just propagate the error to be shown as a toast
+        throw apiError;
+      }
     } catch (error) {
       if (error instanceof Error) {
-        return rejectWithValue(error.message);
+        // Provide more helpful error message to the user
+        let errorMessage = error.message;
+        if (errorMessage.includes("document_id")) {
+          errorMessage = "There's an issue with the document ID format. Please try selecting a different document.";
+        } else if (errorMessage.toLowerCase().includes("network") || errorMessage.includes("fetch")) {
+          errorMessage = "Network error. Please check your internet connection and try again.";
+        }
+        
+        console.error("Error in sendMessage thunk:", error);
+        return rejectWithValue(errorMessage);
       }
-      return rejectWithValue("Failed to send message");
+      return rejectWithValue("Failed to send message. Please try again later.");
     }
   }
 );

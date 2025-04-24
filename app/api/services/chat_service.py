@@ -2,6 +2,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.messages import HumanMessage, SystemMessage
 from jinja2 import Environment, FileSystemLoader
 import os
 import logging
@@ -102,20 +103,33 @@ class ChatService:
                 question=question
             )
 
-            # Create and execute RAG chain
-            logger.info("Executing RAG chain with LLM...")
-            rag_chain = (
-                {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
-                | prompt
-                | self.llm
-                | self.output_parser
-            )
+            # Use a simple direct approach with the LLM
+            logger.info("Using simplified approach with direct HumanMessage...")
+            
+            # Join contexts with separator
+            context_text = "\n---\n".join(contexts)
+            
+            # Create a simple prompt format that works reliably with Gemini
+            simplified_prompt = f"""Please answer the question based on this context:
 
+Context:
+{context_text}
+
+Question: {question}
+
+Answer:"""
+            
+            logger.info(f"Simplified prompt preview: {simplified_prompt[:100]}...")
+            
+            # Create a human message with the prompt
+            message = HumanMessage(content=simplified_prompt)
+            
+            # Call the LLM directly with the human message
             logger.info("Invoking LLM for response generation...")
-            response = await rag_chain.ainvoke({
-                "context": contexts,
-                "question": question
-            })
+            llm_response = await self.llm.ainvoke([message])
+            
+            # Parse the response
+            response = self.output_parser.invoke(llm_response)
             
             # Log a truncated version of the response
             truncated_response = response[:200] + "..." if len(response) > 200 else response

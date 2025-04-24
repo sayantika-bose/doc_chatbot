@@ -21,7 +21,7 @@ const ChatInput = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [textareaHeight, setTextareaHeight] = useState("auto");
   
-  const { currentDocumentId, isLoading } = useSelector((state: RootState) => state.chat);
+  const { currentDocumentId, isLoading, error } = useSelector((state: RootState) => state.chat);
   const { currentDocument } = useSelector((state: RootState) => state.documents);
   
   const form = useForm<FormData>({
