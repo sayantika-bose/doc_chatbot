@@ -1,0 +1,4 @@
+[Backend]
+command = "cd app && python -m api.main"
+persistent = true
+runOnStart = false
