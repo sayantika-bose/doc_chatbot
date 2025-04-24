@@ -49,8 +49,8 @@ const Chat = () => {
     <div className="fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Document Info Panel (1/4 on large screens) */}
-        <div className="bg-white rounded-lg shadow-md p-4 h-fit lg:col-span-1">
-          <h3 className="text-lg font-medium text-neutral-800 mb-4">Document</h3>
+        <div className="bg-card rounded-lg shadow-md p-4 h-fit lg:col-span-1">
+          <h3 className="text-lg font-medium text-foreground mb-4">Document</h3>
           <DocumentSelector 
             documents={documents}
             currentDocumentId={currentDocumentId}
@@ -58,13 +58,13 @@ const Chat = () => {
         </div>
         
         {/* Chat Interface (3/4 on large screens) */}
-        <div className="bg-white rounded-lg shadow-md p-4 lg:p-6 lg:col-span-3 flex flex-col h-[calc(100vh-12rem)]">
+        <div className="bg-card rounded-lg shadow-md p-4 lg:p-6 lg:col-span-3 flex flex-col h-[calc(100vh-12rem)]">
           <div className="flex-grow flex flex-col overflow-hidden">
             {/* Chat Header */}
-            <div className="flex justify-between items-center pb-4 border-b border-neutral-200">
+            <div className="flex justify-between items-center pb-4 border-b border-border">
               <div>
-                <h3 className="text-lg font-medium text-neutral-800">Chat</h3>
-                <p className="text-sm text-neutral-500">
+                <h3 className="text-lg font-medium text-foreground">Chat</h3>
+                <p className="text-sm text-muted-foreground">
                   Ask questions about document: <span className="font-medium">
                     {currentDocument?.fileName || "No document selected"}
                   </span>

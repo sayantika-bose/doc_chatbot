@@ -85,9 +85,9 @@ class ChatService:
         logger.info(f"Question: {question}")
         
         try:
-            # Get relevant context
+            # Get relevant context with increased k value for better coverage
             logger.info("Retrieving relevant chunks from document...")
-            contexts = await self.indexer_service.get_relevant_chunks(question, document_id)
+            contexts = await self.indexer_service.get_relevant_chunks(question, document_id, k=110)
             
             if not contexts:
                 logger.warning(f"No relevant chunks found for document {document_id} and question: {question}")

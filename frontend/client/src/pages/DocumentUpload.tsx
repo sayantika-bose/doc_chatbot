@@ -35,9 +35,9 @@ const DocumentUpload = () => {
 
   return (
     <div className="fade-in">
-      <Card className="bg-white rounded-lg shadow-md p-2 max-w-2xl mx-auto">
+      <Card className="bg-card rounded-lg shadow-md p-2 max-w-2xl mx-auto">
         <CardContent className="p-6">
-          <h2 className="text-2xl font-medium text-neutral-800 mb-6">Upload Document</h2>
+          <h2 className="text-2xl font-medium text-foreground mb-6">Upload Document</h2>
           
           <DropZone />
           

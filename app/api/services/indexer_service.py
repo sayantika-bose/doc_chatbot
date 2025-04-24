@@ -139,7 +139,7 @@ class IndexerService:
             logger.error(traceback.format_exc())
             raise
 
-    async def get_relevant_chunks(self, query: str, document_id: str, k: int = 3):
+    async def get_relevant_chunks(self, query: str, document_id: str, k: int = 110):
         logger.info(f"Searching for relevant chunks for query: '{query}'")
         logger.info(f"Document ID filter: {document_id}, k={k}")
         

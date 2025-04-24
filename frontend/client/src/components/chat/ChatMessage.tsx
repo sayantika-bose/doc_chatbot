@@ -29,22 +29,23 @@ const ChatMessage = ({ content, isUserMessage }: ChatMessageProps) => {
   return (
     <div
       className={cn(
-        "message-bubble relative p-3 md:p-4 rounded-lg max-w-[80%] shadow-sm",
+        "message-bubble relative p-3 md:p-4 rounded-lg max-w-[80%] shadow-sm mb-4",
         isUserMessage
-          ? "user-message bg-primary/10 ml-auto rounded-br-sm"
-          : "ai-message bg-white mr-auto rounded-bl-sm"
+          ? "user-message bg-blue-500 text-white ml-auto rounded-br-sm"
+          : "ai-message bg-gray-100 dark:bg-slate-800 dark:text-white mr-auto rounded-bl-sm"
       )}
     >
       {!isUserMessage && (
         <div className="flex items-start">
           <div className="text-primary mr-2 text-xl">🤖</div>
           <div className="flex-1">
-            <ReactMarkdown
-              className="prose prose-sm max-w-none text-neutral-800"
-              remarkPlugins={[remarkGfm]}
-            >
-              {content}
-            </ReactMarkdown>
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
             
             <div className="mt-2 flex justify-end">
               <div className="flex text-xs space-x-2">
@@ -79,7 +80,7 @@ const ChatMessage = ({ content, isUserMessage }: ChatMessageProps) => {
       )}
       
       {isUserMessage && (
-        <p className="text-neutral-800">{content}</p>
+        <p className="text-white">{content}</p>
       )}
     </div>
   );

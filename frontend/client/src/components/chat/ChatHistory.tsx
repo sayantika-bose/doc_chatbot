@@ -23,7 +23,7 @@ const ChatHistory = () => {
           <div className="flex items-start">
             <div className="text-primary mr-2 text-xl">🤖</div>
             <div>
-              <p className="text-neutral-800">
+              <p className="text-foreground">
                 Hello! I'm your document assistant. I can answer questions about your uploaded document. What would you like to know?
               </p>
             </div>
@@ -44,7 +44,7 @@ const ChatHistory = () => {
         <div className="ai-message message-bubble">
           <div className="flex items-center">
             <Loader2 className="h-5 w-5 text-primary animate-spin mr-3" />
-            <span className="text-neutral-600">Thinking...</span>
+            <span className="text-muted-foreground">Thinking...</span>
           </div>
         </div>
       )}
