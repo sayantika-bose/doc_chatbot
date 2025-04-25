@@ -6,5 +6,6 @@ vite.config.ts.*
 *.tar.gzvenv/
 .env
 app/venv/
-chroma_db/
+app/chroma_db/
 repl_nix_workspace.egg-info/
+**/__pycache__/
