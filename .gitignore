@@ -7,3 +7,4 @@ vite.config.ts.*
 .env
 app/venv/
 chroma_db/
+repl_nix_workspace.egg-info/
