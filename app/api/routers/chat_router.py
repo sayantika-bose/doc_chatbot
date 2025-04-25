@@ -28,33 +28,27 @@ async def upload_document(file: UploadFile = File(...)):
         content = await file.read()
         logger.info(f"Read {len(content)} bytes from file")
         
-        # Try different encodings to handle various file types
-        try:
-            # First try UTF-8
-            logger.info("Attempting to decode with UTF-8")
-            content_text = content.decode("utf-8")
-            logger.info("Successfully decoded with UTF-8")
-        except UnicodeDecodeError as e:
-            logger.warning(f"UTF-8 decoding failed: {str(e)}")
+        # Check if file is PDF or text
+        if file.filename.lower().endswith('.pdf'):
+            logger.info("Processing PDF file")
+            content_to_process = content  # Pass bytes directly for PDF
+        else:
+            # For text files, decode the content
+            logger.info("Processing text file")
             try:
-                # If UTF-8 fails, try Latin-1 (which can decode any byte value)
-                logger.info("Attempting to decode with Latin-1")
-                content_text = content.decode("latin-1")
-                logger.info("Successfully decoded with Latin-1")
-            except Exception as e:
-                logger.warning(f"Latin-1 decoding failed: {str(e)}")
-                # If all fails, use errors='replace' to substitute invalid characters
-                logger.info("Falling back to UTF-8 with replacement characters")
-                content_text = content.decode("utf-8", errors="replace")
-                logger.info("Successfully decoded with UTF-8 (with replacements)")
+                content_to_process = content.decode("utf-8")
+            except UnicodeDecodeError:
+                content_to_process = content.decode("utf-8", errors="replace")
+                logger.info("Decoded text file with replacement characters")
         
-        logger.info(f"Decoded file content, length: {len(content_text)} characters")
-        logger.info("Indexing document...")
-        
+        logger.info("Processing document...")
         # Process and index the document
         document_id = await indexer_service.process_document(
-            content_text,
-            metadata={"filename": file.filename}
+            content_to_process,
+            metadata={
+                "filename": file.filename,
+                "content_type": file.content_type
+            }
         )
         
         logger.info(f"Document indexed successfully with ID: {document_id}")

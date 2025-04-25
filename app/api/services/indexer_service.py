@@ -3,10 +3,13 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import chromadb
 from chromadb.utils import embedding_functions
+from chromadb.config import Settings as ChromaSettings
 import uuid
 import logging
 import os
 import traceback
+from io import BytesIO
+from PyPDF2 import PdfReader
 from api.config.settings import get_settings
 from api.config.chroma_settings import CHROMA_PERSIST_DIR
 
@@ -26,8 +29,7 @@ class IndexerService:
         # Create the persistence directory if it doesn't exist
         os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
         
-        try:
-            # Initialize ChromaDB client with persistence
+        try:            # Initialize ChromaDB client with persistence
             self.client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
             logger.info("ChromaDB client initialized successfully")
             
@@ -39,15 +41,12 @@ class IndexerService:
             logger.info("GoogleGenerativeAIEmbeddings initialized successfully")
             
             # Create or get the collection
-            self.collection = self.client.get_or_create_collection(
-                name="documents",
-                embedding_function=embedding_functions.DefaultEmbeddingFunction()
-            )
+            self.collection = self.client.get_or_create_collection(name="documents")
             logger.info(f"Collection 'documents' created or accessed successfully")
             
             self.text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1500,  # Increased from 1000 to 1500
-                chunk_overlap=300,  # Increased from 200 to 300
+                chunk_size=1500,
+                chunk_overlap=300,
             )
             logger.info("Text splitter initialized with chunk_size=1500, chunk_overlap=300")
             
@@ -81,59 +80,72 @@ class IndexerService:
         except Exception as e:
             logger.error(f"Error getting collection stats: {str(e)}")
 
-    async def process_document(self, content: str, metadata: dict = None) -> str:
-        # Generate a unique document ID
-        document_id = str(uuid.uuid4())
-        logger.info(f"Processing document with ID: {document_id}")
-        logger.info(f"Document metadata: {metadata}")
-        logger.info(f"Document content length: {len(content)} characters")
-        
+    def _clean_document_content(self, content: str) -> str:
+        """Clean document content by removing common PDF artifacts and noise."""
+        if not content:
+            return ""
+            
+        # Basic cleaning: remove extra whitespace and normalize line endings
+        content = " ".join(content.split())
+        return content.strip()
+
+    async def process_document(self, file_content, metadata: dict = None) -> str:
+        """
+        Process a document and index its content.
+        Args:
+            file_content: Either bytes (for PDFs) or string (for text)
+            metadata (dict): Optional metadata for the document
+        Returns:
+            str: Document ID
+        """
         try:
-            # Split the document into chunks
-            chunks = self.text_splitter.split_text(content)
-            logger.info(f"Document split into {len(chunks)} chunks")
+            # Generate a unique document ID
+            document_id = str(uuid.uuid4())
             
-            if len(chunks) == 0:
-                logger.warning("Document produced 0 chunks! Content may be empty or invalid.")
-                return document_id
+            # Extract text based on content type
+            if isinstance(file_content, bytes) and metadata.get("filename", "").lower().endswith(".pdf"):
+                logger.info("Processing PDF document")
+                pdf_reader = PdfReader(BytesIO(file_content))
+                text_content = ""
+                for page in pdf_reader.pages:
+                    text_content += page.extract_text() + "\n"
+            else:
+                logger.info("Processing text document")
+                text_content = file_content if isinstance(file_content, str) else file_content.decode('utf-8')
+
+            # Clean the content
+            text_content = self._clean_document_content(text_content)
             
-            # Process all chunks at once
-            ids = [f"{document_id}_{i}" for i in range(len(chunks))]
+            if not text_content.strip():
+                raise ValueError("No text content could be extracted from the document")
+
+            # Split text into chunks
+            chunks = self.text_splitter.split_text(text_content)
+            logger.info(f"Split document into {len(chunks)} chunks")
+
+            # Prepare chunks for indexing
+            chunk_ids = [f"{document_id}_{i}" for i in range(len(chunks))]
             
-            logger.info(f"Generating embeddings for {len(chunks)} chunks...")
-            embeddings = []
-            for i, chunk in enumerate(chunks):
-                try:
-                    embedding = await self.embeddings.aembed_query(chunk)
-                    embeddings.append(embedding)
-                    if i % 5 == 0:  # Log progress every 5 chunks
-                        logger.info(f"Generated embeddings for {i+1}/{len(chunks)} chunks")
-                except Exception as e:
-                    logger.error(f"Error generating embedding for chunk {i}: {str(e)}")
-                    # Use a zero embedding as fallback (this is not ideal but prevents complete failure)
-                    embeddings.append([0.0] * 768)  # Most embedding models use 768 dimensions
+            # Add metadata to each chunk
+            chunk_metadata = []
+            for _ in chunks:
+                chunk_meta = metadata.copy() if metadata else {}
+                chunk_meta["document_id"] = document_id
+                chunk_metadata.append(chunk_meta)
+
+            # Index the chunks
+            embeddings = [self.embeddings.embed_query(chunk) for chunk in chunks]
             
-            metadatas = [{
-                "document_id": document_id,
-                "chunk_id": i,
-                **(metadata or {})
-            } for i in range(len(chunks))]
-            
-            logger.info(f"Adding {len(chunks)} chunks to ChromaDB...")
-            
-            # Add documents to ChromaDB
             self.collection.add(
+                ids=chunk_ids,
                 embeddings=embeddings,
                 documents=chunks,
-                ids=ids,
-                metadatas=metadatas
+                metadatas=chunk_metadata
             )
             
-            logger.info(f"Successfully indexed document {document_id} with {len(chunks)} chunks")
-            self._log_collection_stats()  # Log updated stats
-            
+            logger.info(f"Successfully indexed document with ID: {document_id}")
             return document_id
-            
+
         except Exception as e:
             logger.error(f"Error processing document: {str(e)}")
             logger.error(traceback.format_exc())
